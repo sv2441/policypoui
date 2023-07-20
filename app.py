@@ -34,17 +34,17 @@ def dict_to_csv(data, filename, append=False):
         writer.writerow(data)
 
 # Load paraphrasing model
-model_name = 'tuner007/pegasus_paraphrase'
-torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
-tokenizer = PegasusTokenizer.from_pretrained(model_name)
-model = PegasusForConditionalGeneration.from_pretrained(model_name).to(torch_device)
+# model_name = 'tuner007/pegasus_paraphrase'
+# torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# tokenizer = PegasusTokenizer.from_pretrained(model_name)
+# model = PegasusForConditionalGeneration.from_pretrained(model_name).to(torch_device)
 
-# Function to generate paraphrased text
-def get_response(input_text, num_return_sequences):
-    batch = tokenizer.prepare_seq2seq_batch([input_text], truncation=True, padding='longest', max_length=60, return_tensors="pt").to(torch_device)
-    translated = model.generate(**batch, max_length=60, num_beams=10, num_return_sequences=num_return_sequences, temperature=1.5)
-    tgt_text = tokenizer.batch_decode(translated, skip_special_tokens=True)
-    return tgt_text
+# # Function to generate paraphrased text
+# def get_response(input_text, num_return_sequences):
+#     batch = tokenizer.prepare_seq2seq_batch([input_text], truncation=True, padding='longest', max_length=60, return_tensors="pt").to(torch_device)
+#     translated = model.generate(**batch, max_length=60, num_beams=10, num_return_sequences=num_return_sequences, temperature=1.5)
+#     tgt_text = tokenizer.batch_decode(translated, skip_special_tokens=True)
+#     return tgt_text
 
 # Function to process the CSV and perform policy generation
 def result(df):
@@ -73,16 +73,16 @@ def result(df):
     st.dataframe(final)
 
 # Function to perform paraphrasing
-def result2(df):
-    df4 = df['Policy']
-    paraphrase = []
-    for i in df['Policy']:
-        a = get_response(i, 1)
-        paraphrase.append(a)
+# def result2(df):
+#     df4 = df['Policy']
+#     paraphrase = []
+#     for i in df['Policy']:
+#         a = get_response(i, 1)
+#         paraphrase.append(a)
 
-    df['paraphrased_text'] = paraphrase
-    df.to_csv('result2.csv', index=False)
-    st.markdown("Paraphrased Successfully")
+#     df['paraphrased_text'] = paraphrase
+#     df.to_csv('result2.csv', index=False)
+#     st.markdown("Paraphrased Successfully")
 
 # Function to perform topic generation and summarization
 def result3(df):
@@ -148,11 +148,11 @@ def main():
         if st.button("Policy Generation"):
             result(pd.read_csv("policy_md1.csv"))
         
-        if st.button("Paraphraser"):
-            result2(pd.read_csv("result1.csv"))
+        # if st.button("Paraphraser"):
+        #     result2(pd.read_csv("result1.csv"))
             
         if st.button("Topic Generation"):
-            result3(pd.read_csv('result2.csv'))
+            result3(pd.read_csv('result1.csv'))
 
 if __name__ == "__main__":
     main()
