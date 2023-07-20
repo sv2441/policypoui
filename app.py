@@ -34,10 +34,10 @@ def dict_to_csv(data, filename, append=False):
         writer.writerow(data)
 
 # Load paraphrasing model
-model_name = 'tuner007/pegasus_paraphrase'
-torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
-tokenizer = PegasusTokenizer.from_pretrained(model_name)
-model = PegasusForConditionalGeneration.from_pretrained(model_name).to(torch_device)
+# model_name = 'tuner007/pegasus_paraphrase'
+# torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# tokenizer = PegasusTokenizer.from_pretrained(model_name)
+# model = PegasusForConditionalGeneration.from_pretrained(model_name).to(torch_device)
 
 # Function to generate paraphrased text
 def get_response(input_text, num_return_sequences):
