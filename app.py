@@ -86,11 +86,11 @@ def result(df):
 
 # Function to perform topic generation and summarization
 def result3(df):
-    df5 = df['paraphrased_text'].str.replace('[\[\]]', '', regex=True)
-    df['paraphrased_text'] = df['paraphrased_text'].str.replace('[\[\]]', '', regex=True)
+    df5 = df['Policy'].str.replace('[\[\]]', '', regex=True)
+    df['Policy'] = df['Policy'].str.replace('[\[\]]', '', regex=True)
 
     # Combine all rows into a single variable
-    combined_text = ' '.join(df['paraphrased_text'].astype(str))
+    combined_text = ' '.join(df['Policy'].astype(str))
     
     title_template = """ \ You are an AI Governance bot. 
                 Summarise the "{topic}" under each Key topics.
