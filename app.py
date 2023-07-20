@@ -108,16 +108,22 @@ def result3(df):
     prompt = ChatPromptTemplate.from_template(template=title_template)
     
     
-    batch_size =5
+    batch_size =10
     batches = split_into_batches(combined_text, batch_size)
 
+    
+    if os.path.exists('test.doc'):
+        doc = docx.Document('test.doc')
+    else:
+        doc = docx.Document()
+    
     for batch in batches:
         paragraph = ". ".join(batch)
-        doc = docx.Document() 
-        messages = prompt.format_messages(topic=paragraph)
+        messages = prompt.format_messages(topic=paragraph, format_instructions=format_instructions)
         response = chat_llm(messages)
         content = str(response.content)  # Assuming response.content is a string
         doc.add_paragraph(content)
+    
     doc.save('test.doc')
     # doc = docx.Document() 
     # messages = prompt.format_messages(topic=combined_text)
