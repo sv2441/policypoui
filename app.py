@@ -32,23 +32,26 @@ def dict_to_csv(data, filename, append=False):
         if not append:
             writer.writeheader()
         writer.writerow(data)
-        
+
+# Load paraphrasing model
+model_name = 'tuner007/pegasus_paraphrase'
+torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+tokenizer = PegasusTokenizer.from_pretrained(model_name)
+model = PegasusForConditionalGeneration.from_pretrained(model_name).to(torch_device)
+
+# Function to generate paraphrased text
+def get_response(input_text, num_return_sequences):
+    batch = tokenizer.prepare_seq2seq_batch([input_text], truncation=True, padding='longest', max_length=60, return_tensors="pt").to(torch_device)
+    translated = model.generate(**batch, max_length=60, num_beams=10, num_return_sequences=num_return_sequences, temperature=1.5)
+    tgt_text = tokenizer.batch_decode(translated, skip_special_tokens=True)
+    return tgt_text
+
+
 def split_into_batches(paragraph, batch_size):
     sentences = paragraph.split(". ")  # Assuming sentences are separated by ". "
     batches = [sentences[i:i+batch_size] for i in range(0, len(sentences), batch_size)]
     return batches
-# Load paraphrasing model
-# model_name = 'tuner007/pegasus_paraphrase'
-# torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
-# tokenizer = PegasusTokenizer.from_pretrained(model_name)
-# model = PegasusForConditionalGeneration.from_pretrained(model_name).to(torch_device)
 
-# # Function to generate paraphrased text
-# def get_response(input_text, num_return_sequences):
-#     batch = tokenizer.prepare_seq2seq_batch([input_text], truncation=True, padding='longest', max_length=60, return_tensors="pt").to(torch_device)
-#     translated = model.generate(**batch, max_length=60, num_beams=10, num_return_sequences=num_return_sequences, temperature=1.5)
-#     tgt_text = tokenizer.batch_decode(translated, skip_special_tokens=True)
-#     return tgt_text
 
 # Function to process the CSV and perform policy generation
 def result(df):
@@ -90,6 +93,8 @@ def result(df):
 
 # Function to perform topic generation and summarization
 def result3(df):
+    
+    
     df5 = df['Policy'].str.replace('[\[\]]', '', regex=True)
     df['Policy'] = df['Policy'].str.replace('[\[\]]', '', regex=True)
 
@@ -97,21 +102,29 @@ def result3(df):
     combined_text = ' '.join(df['Policy'].astype(str))
     
     title_template = """ \ You are an AI Governance bot. 
-                Summarise the "{topic}" under each Key topics.
+                summarize the "{topic}" in one or two instructional policy pointers under each topic.
                 """ 
     # for 10 batch classify and group the statements into key topic
     prompt = ChatPromptTemplate.from_template(template=title_template)
-    batch_size =10
-    batches = split_into_batches(combined_text, batch_size)
     
+    
+    batch_size =5
+    batches = split_into_batches(combined_text, batch_size)
+
     for batch in batches:
         paragraph = ". ".join(batch)
         doc = docx.Document() 
-        messages = prompt.format_messages(topic=combined_text)
+        messages = prompt.format_messages(topic=paragraph)
         response = chat_llm(messages)
         content = str(response.content)  # Assuming response.content is a string
         doc.add_paragraph(content)
     doc.save('test.doc')
+    # doc = docx.Document() 
+    # messages = prompt.format_messages(topic=combined_text)
+    # response = chat_llm(messages)
+    # content = str(response.content)  # Assuming response.content is a string
+    # doc.add_paragraph(content)
+    # doc.save('test.doc')
 
     with open('test.doc', 'rb') as f:
         doc_data = f.read()
