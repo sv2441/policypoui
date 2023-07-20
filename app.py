@@ -93,7 +93,7 @@ def result3(df):
     combined_text = ' '.join(df['paraphrased_text'].astype(str))
     
     title_template = """ \ You are an AI Governance bot. 
-                classify and group the "{topic}" into Key topics and Summarise the statements under each topics.
+                Summarise the "{topic}" under each Key topics.
                 """ 
     # for 10 batch classify and group the statements into key topic
     prompt = ChatPromptTemplate.from_template(template=title_template)
