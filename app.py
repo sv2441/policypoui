@@ -32,7 +32,11 @@ def dict_to_csv(data, filename, append=False):
         if not append:
             writer.writeheader()
         writer.writerow(data)
-
+        
+def split_into_batches(paragraph, batch_size):
+    sentences = paragraph.split(". ")  # Assuming sentences are separated by ". "
+    batches = [sentences[i:i+batch_size] for i in range(0, len(sentences), batch_size)]
+    return batches
 # Load paraphrasing model
 # model_name = 'tuner007/pegasus_paraphrase'
 # torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -97,12 +101,16 @@ def result3(df):
                 """ 
     # for 10 batch classify and group the statements into key topic
     prompt = ChatPromptTemplate.from_template(template=title_template)
+    batch_size =10
+    batches = split_into_batches(combined_text, batch_size)
     
-    doc = docx.Document() 
-    messages = prompt.format_messages(topic=combined_text)
-    response = chat_llm(messages)
-    content = str(response.content)  # Assuming response.content is a string
-    doc.add_paragraph(content)
+    for batch in batches:
+        paragraph = ". ".join(batch)
+        doc = docx.Document() 
+        messages = prompt.format_messages(topic=combined_text)
+        response = chat_llm(messages)
+        content = str(response.content)  # Assuming response.content is a string
+        doc.add_paragraph(content)
     doc.save('test.doc')
 
     with open('test.doc', 'rb') as f:
