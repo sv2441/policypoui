@@ -119,7 +119,7 @@ def result3(df):
     
     for batch in batches:
         paragraph = ". ".join(batch)
-        messages = prompt.format_messages(topic=paragraph, format_instructions=format_instructions)
+        messages = prompt.format_messages(topic=paragraph)
         response = chat_llm(messages)
         content = str(response.content)  # Assuming response.content is a string
         doc.add_paragraph(content)
