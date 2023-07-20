@@ -108,7 +108,7 @@ def result3(df):
     prompt = ChatPromptTemplate.from_template(template=title_template)
     
     
-    batch_size =10
+    batch_size =5
     batches = split_into_batches(combined_text, batch_size)
 
     
