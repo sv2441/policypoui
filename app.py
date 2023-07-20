@@ -54,7 +54,7 @@ def result(df):
     format_instructions = output_parser.get_format_instructions()
     
     title_template = """ \ You are an AI Governance bot. Just Execute the set of steps one by one.
-                Convert "{topic}" into policy statements in 50 to 100 words.
+                Convert "{topic}" into policy statements in 10 words.
                 {format_instructions}
                 """ 
     prompt = ChatPromptTemplate.from_template(template=title_template)
