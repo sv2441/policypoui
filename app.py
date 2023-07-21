@@ -3,7 +3,7 @@ import pandas as pd
 import base64
 import csv
 import torch
-from transformers import PegasusForConditionalGeneration, PegasusTokenizer
+
 import docx
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain, SimpleSequentialChain
