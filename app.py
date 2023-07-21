@@ -13,7 +13,6 @@ import os
 
 # Load environment variables
 load_dotenv()
-# os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 from langchain.chat_models import ChatOpenAI
@@ -33,19 +32,11 @@ def dict_to_csv(data, filename, append=False):
             writer.writeheader()
         writer.writerow(data)
 
-# Load paraphrasing model
-# model_name = 'tuner007/pegasus_paraphrase'
-# torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
-# tokenizer = PegasusTokenizer.from_pretrained(model_name)
-# model = PegasusForConditionalGeneration.from_pretrained(model_name).to(torch_device)
-
-# Function to generate paraphrased text
-def get_response(input_text, num_return_sequences):
-    batch = tokenizer.prepare_seq2seq_batch([input_text], truncation=True, padding='longest', max_length=60, return_tensors="pt").to(torch_device)
-    translated = model.generate(**batch, max_length=60, num_beams=10, num_return_sequences=num_return_sequences, temperature=1.5)
-    tgt_text = tokenizer.batch_decode(translated, skip_special_tokens=True)
-    return tgt_text
-
+def group_into_batches(df):
+    
+    batches = df.groupby('Article')
+    
+    return batches
 
 def split_into_batches(paragraph, batch_size):
     sentences = paragraph.split(". ")  # Assuming sentences are separated by ". "
@@ -94,37 +85,50 @@ def result(df):
 # Function to perform topic generation and summarization
 def result3(df):
     
-    
+
     df5 = df['Policy'].str.replace('[\[\]]', '', regex=True)
-    df['Policy'] = df['Policy'].str.replace('[\[\]]', '', regex=True)
+    # df['Policy'] = df['Policy'].str.replace('[\[\]]', '', regex=True)
 
     # Combine all rows into a single variable
-    combined_text = ' '.join(df['Policy'].astype(str))
+    # combined_text = ' '.join(df['Policy'].astype(str))
     
     title_template = """ \ You are an AI Governance bot. 
-                summarize the "{topic}" in one or two instructional policy pointers under each topic.
+                summarize the "{topic}" as instructional policy statements in a paragraph or two with "{article}" name as title.
                 """ 
     # for 10 batch classify and group the statements into key topic
     prompt = ChatPromptTemplate.from_template(template=title_template)
     
     
-    batch_size =5
-    batches = split_into_batches(combined_text, batch_size)
-
-    
     if os.path.exists('test.doc'):
-        doc = docx.Document('test.doc')
+            doc = docx.Document('test.doc')
     else:
-        doc = docx.Document()
-    
-    for batch in batches:
-        paragraph = ". ".join(batch)
-        messages = prompt.format_messages(topic=paragraph)
+            doc = docx.Document()
+            
+    batches = group_into_batches(df)        
+    for name, data in batches:
+        paragraph = " ".join(data['Policy'])
+        messages = prompt.format_messages(topic=paragraph , article=name)
         response = chat_llm(messages)
         content = str(response.content)  # Assuming response.content is a string
         doc.add_paragraph(content)
-    
+
     doc.save('test.doc')
+        # batch_size =5
+    # batches = split_into_batches(combined_text, batch_size)
+
+    # if os.path.exists('test.doc'):
+    #     doc = docx.Document('test.doc')
+    # else:
+    #     doc = docx.Document()
+
+    # for batch in batches:
+    #     paragraph = ". ".join(batch)
+    #     messages = prompt.format_messages(topic=paragraph)
+    #     response = chat_llm(messages)
+    #     content = str(response.content)  # Assuming response.content is a string
+    #     doc.add_paragraph(content)
+
+    # doc.save('test.doc')
     # doc = docx.Document() 
     # messages = prompt.format_messages(topic=combined_text)
     # response = chat_llm(messages)
@@ -179,7 +183,7 @@ def main():
         #     result2(pd.read_csv("result1.csv"))
             
         if st.button("Topic Generation"):
-            result3(pd.read_csv('result1.csv'))
+            result3(pd.read_csv('result1.csv',usecols=['Policy','Article']))
 
 if __name__ == "__main__":
     main()
