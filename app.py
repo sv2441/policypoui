@@ -93,7 +93,7 @@ def result3(df):
     # combined_text = ' '.join(df['Policy'].astype(str))
     
     title_template = """ \ You are an AI Governance bot. 
-                summarize the "{topic}" as instructional policy statements in a paragraph or two with "{article}" name as title.
+                summarize the "{topic}" as brief instructional policy statements with "{article}" as title.
                 """ 
     # for 10 batch classify and group the statements into key topic
     prompt = ChatPromptTemplate.from_template(template=title_template)
