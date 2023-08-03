@@ -32,16 +32,18 @@ def dict_to_csv(data, filename, append=False):
             writer.writeheader()
         writer.writerow(data)
 
-def group_into_batches(df):
-    
-    batches = df.groupby('Article')
-    
-    return batches
+def combine_policy(df):
+    grouped_df = df.groupby('Article')['Policy'].apply(lambda x: ' '.join(x)).reset_index()
+    grouped_df.rename(columns={'Policy': 'Policies'}, inplace=True)
+    grouped_df.to_csv('grouped.csv', index=False)
+    return grouped_df
 
-def split_into_batches(paragraph, batch_size):
-    sentences = paragraph.split(". ")  # Assuming sentences are separated by ". "
-    batches = [sentences[i:i+batch_size] for i in range(0, len(sentences), batch_size)]
-    return batches
+
+def combine_column_to_paragraph(df, column_name):
+    column_data = df[column_name].tolist()
+    paragraph = " ".join(str(item) for item in column_data)
+    return paragraph
+
 
 
 # Function to process the CSV and perform policy generation
@@ -82,68 +84,68 @@ def result(df):
 #     df.to_csv('result2.csv', index=False)
 #     st.markdown("Paraphrased Successfully")
 
-# Function to perform topic generation and summarization
-def result3(df):
+# # Function to perform topic generation and summarization
+# def result3(df):
     
 
-    df5 = df['Policy'].str.replace('[\[\]]', '', regex=True)
-    # df['Policy'] = df['Policy'].str.replace('[\[\]]', '', regex=True)
+#     df5 = df['Policy'].str.replace('[\[\]]', '', regex=True)
+#     # df['Policy'] = df['Policy'].str.replace('[\[\]]', '', regex=True)
 
-    # Combine all rows into a single variable
-    # combined_text = ' '.join(df['Policy'].astype(str))
+#     # Combine all rows into a single variable
+#     # combined_text = ' '.join(df['Policy'].astype(str))
     
-    title_template = """ \ You are an AI Governance bot. 
-                summarize the "{topic}" as brief instructional policy statements with "{article}" as title.
-                """ 
-    # for 10 batch classify and group the statements into key topic
-    prompt = ChatPromptTemplate.from_template(template=title_template)
+#     title_template = """ \ You are an AI Governance bot. 
+#                 summarize the "{topic}" as brief instructional policy statements with "{article}" as title.
+#                 """ 
+#     # for 10 batch classify and group the statements into key topic
+#     prompt = ChatPromptTemplate.from_template(template=title_template)
     
     
-    if os.path.exists('test.doc'):
-            doc = docx.Document('test.doc')
-    else:
-            doc = docx.Document()
+#     if os.path.exists('test.doc'):
+#             doc = docx.Document('test.doc')
+#     else:
+#             doc = docx.Document()
             
-    batches = group_into_batches(df)        
-    for name, data in batches:
-        paragraph = " ".join(data['Policy'])
-        messages = prompt.format_messages(topic=paragraph , article=name)
-        response = chat_llm(messages)
-        content = str(response.content)  # Assuming response.content is a string
-        doc.add_paragraph(content)
+#     batches = group_into_batches(df)        
+#     for name, data in batches:
+#         paragraph = " ".join(data['Policy'])
+#         messages = prompt.format_messages(topic=paragraph , article=name)
+#         response = chat_llm(messages)
+#         content = str(response.content)  # Assuming response.content is a string
+#         doc.add_paragraph(content)
 
-    doc.save('test.doc')
-        # batch_size =5
-    # batches = split_into_batches(combined_text, batch_size)
+#     doc.save('test.doc')
+#         # batch_size =5
+#     # batches = split_into_batches(combined_text, batch_size)
 
-    # if os.path.exists('test.doc'):
-    #     doc = docx.Document('test.doc')
-    # else:
-    #     doc = docx.Document()
+#     # if os.path.exists('test.doc'):
+#     #     doc = docx.Document('test.doc')
+#     # else:
+#     #     doc = docx.Document()
 
-    # for batch in batches:
-    #     paragraph = ". ".join(batch)
-    #     messages = prompt.format_messages(topic=paragraph)
-    #     response = chat_llm(messages)
-    #     content = str(response.content)  # Assuming response.content is a string
-    #     doc.add_paragraph(content)
+#     # for batch in batches:
+#     #     paragraph = ". ".join(batch)
+#     #     messages = prompt.format_messages(topic=paragraph)
+#     #     response = chat_llm(messages)
+#     #     content = str(response.content)  # Assuming response.content is a string
+#     #     doc.add_paragraph(content)
 
-    # doc.save('test.doc')
-    # doc = docx.Document() 
-    # messages = prompt.format_messages(topic=combined_text)
-    # response = chat_llm(messages)
-    # content = str(response.content)  # Assuming response.content is a string
-    # doc.add_paragraph(content)
-    # doc.save('test.doc')
+#     # doc.save('test.doc')
+#     # doc = docx.Document() 
+#     # messages = prompt.format_messages(topic=combined_text)
+#     # response = chat_llm(messages)
+#     # content = str(response.content)  # Assuming response.content is a string
+#     # doc.add_paragraph(content)
+#     # doc.save('test.doc')
 
-    with open('test.doc', 'rb') as f:
-        doc_data = f.read()
-    b64 = base64.b64encode(doc_data).decode()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="result.doc">Download Result</a>'
-    st.markdown(href, unsafe_allow_html=True)
+#     with open('test.doc', 'rb') as f:
+#         doc_data = f.read()
+#     b64 = base64.b64encode(doc_data).decode()
+#     href = f'<a href="data:application/octet-stream;base64,{b64}" download="result.doc">Download Result</a>'
+#     st.markdown(href, unsafe_allow_html=True)
     
     
-# Function to concatenate columns and download the modified CSV file
+# # Function to concatenate columns and download the modified CSV file
 def process_csv(df):
     # df = pd.read_csv(file)
     df['Combined'] = df['OP Title'].astype(str) + df['OP Description'].astype(str)
@@ -157,7 +159,72 @@ def process_csv(df):
     # Show a preview of the modified data
     st.dataframe(df)
     df.to_csv('policy_md1.csv')
+    
+def result2(df):
+    combine_policy(df) 
+    new_df=pd.read_csv('grouped.csv')
+    
+    Summary_schema = ResponseSchema(name="Summary",
+                              description="Summary as instructional policy paragraph ")
 
+    response_schemas = [Summary_schema]
+
+    output_parser = StructuredOutputParser.from_response_schemas(response_schemas)
+    format_instructions = output_parser.get_format_instructions()
+    
+    title_template = """ \ You are an AI Governance bot.  
+                    Summarize "{topic}" as instructional policy paragraph in {count} Words In Legal Language Style. 
+                     {format_instructions}          
+                """ 
+    prompt = ChatPromptTemplate.from_template(template=title_template)
+    
+    for index, row in new_df.iterrows():
+        topic = row['Policies']
+        # Calculate 30% of the length of the 'topic' variable and store it in the variable 'count'
+        word_count_topic = len(topic.split())
+        count = math.ceil(0.2 * word_count_topic) 
+        
+        messages = prompt.format_messages(topic=topic, count=count,format_instructions = format_instructions)
+        response = chat_llm(messages)
+        content = str(response.content)
+        response_as_dict = output_parser.parse(response.content)
+        data = response_as_dict
+        dict_to_csv(data, 'summary.csv', append=True)
+    result=pd.read_csv("summary.csv" , names=['Summary'])
+    final=pd.concat([new_df, result], axis=1)
+    final.to_csv("result2.csv")
+    st.dataframe(final)
+
+def result3(df):
+    
+    last_df=pd.read_csv("result2.csv")
+    contents = combine_column_to_paragraph(last_df, 'Summary')
+    
+    title_template = """ \ You are an AI Governance bot.  
+                    Restructure {topic} based on topic into a policy document for Government policymakers.          
+                """ 
+    prompt = ChatPromptTemplate.from_template(template=title_template)
+    
+    
+    if os.path.exists('Policy_Document.doc'):
+            doc = docx.Document('Policy_Document.doc')
+    else:
+            doc = docx.Document()
+            
+    
+    messages = prompt.format_messages(topic=contents)
+    response = chat_llm(messages)
+    content = str(response.content)  # Assuming response.content is a string
+    doc.add_paragraph(content)
+    doc.save('Policy_Document.doc')
+
+
+    with open('Policy_Document.doc', 'rb') as f:
+        doc_data = f.read()
+    b64 = base64.b64encode(doc_data).decode()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="result.doc">Download Result</a>'
+    st.markdown(href, unsafe_allow_html=True)
+    
 # Streamlit app
 def main():
     st.title("Policy Prodago")
@@ -178,12 +245,12 @@ def main():
         
         if st.button("Policy Generation"):
             result(pd.read_csv("policy_md1.csv"))
-        
-        # if st.button("Paraphraser"):
-        #     result2(pd.read_csv("result1.csv"))
             
-        if st.button("Topic Generation"):
-            result3(pd.read_csv('result1.csv',usecols=['Policy','Article']))
+        if st.button("Summary"):
+            result2(pd.read_csv('result1.csv',usecols=['Policy','Article']))
+            
+        if st.button("Policy Document Generation"):
+            result3(pd.read_csv("result2.csv"))
 
 if __name__ == "__main__":
     main()
