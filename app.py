@@ -197,11 +197,11 @@ def result2(df):
 
 def result3(df):
     
-    last_df=pd.read_csv("result2.csv")
-    contents = combine_column_to_paragraph(last_df, 'Summary')
+    # last_df=pd.read_csv("result2.csv")
+    contents = combine_column_to_paragraph(df, 'Summary')
     
     title_template = """ \ You are an AI Governance bot.  
-                    Restructure {topic} based on topic into a policy document for Government policymakers.          
+                    Restructure {topic} based on topic into a policy document.          
                 """ 
     prompt = ChatPromptTemplate.from_template(template=title_template)
     
